@@ -685,14 +685,6 @@
                                 messages.pop();
                             }
 
-                            // 以下代码在浏览器中无法直接运行，实际需要后端支持
-                            const saveResponse = await fetch('save-message.php', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(messages)
-                            });
-                            if (!saveResponse.ok) throw new Error('保存留言失败');
-
                             // 模拟保存成功后更新 UI
                             messageList.innerHTML = '';
                             messages.forEach(msg => addMessageToDOM(msg));
@@ -719,6 +711,8 @@
                         messageBoard.classList.toggle('expanded');
                         messageBoardToggle.textContent = messageBoard.classList.contains('expanded') ? '折叠留言板 ▲' : '展开留言板 ▼';
                     });
+
+                    loadMessages()
                 });
             </script>
         </ul>
