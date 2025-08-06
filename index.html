@@ -114,6 +114,42 @@
         .indicator.active {
             background: white;
         }
+        /* 定义基础晃动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(var(--x-offset)) rotate(var(--angle)); }
+            75% { transform: translateX(calc(-1 * var(--x-offset))) rotate(calc(-1 * var(--angle))); }
+        }
+
+        /* 应用动画到链接 */
+        .shake-animation {
+            display: inline-block;
+            --x-offset: 2px;
+            --angle: 2deg;
+            animation: shake 0.3s infinite;
+        }
+        /* 定义颜色渐变动画 */
+        @keyframes colorGradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* 应用渐变动画到文本 */
+        .color-gradient-animation {
+            background: linear-gradient(90deg, #ff0000, #0000ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: colorGradient 3s ease infinite;
+        }
     </style>
 </head>
 <body>
@@ -121,7 +157,12 @@
 <iframe src="navbar.html" width="100%" height="60px" frameborder="0" scrolling="no" style="position: fixed; top: 0; left: 0; z-index: 999;"></iframe>
 <div class="content">
     <!-- 主页内容 -->
-    <h1>欢迎来到我们的校园</h1>
+    <h1 style="object-position: center; text-align: center;">
+        🎉<a style="" class="color-gradient-animation" id="shakeElement">汾阳五中</a>
+        <a style="color:#a9a9a9; font-size: 12px" class="shake-animation"><del>(介绍)</del></a>
+        <a class="color-gradient-animation">恶搞网站</a>🎉
+    </h1>
+    <h2 class="shake-animation">我们<a style="color:#a9a9a9; font-size:12px;" class="shake-animation"><del>的校园网站</del></a><strong>和老师、领导们的爱巢💗💦</strong></h2>
     <p>这里是校园简介内容，可以介绍学校的历史、办学理念、校园环境等信息。</p>
 
     <!-- 轮播图集 -->
