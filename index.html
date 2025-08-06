@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>校园介绍 - 主页</title>
+    <!-- 预加载背景图片 -->
+    <link rel="preload" as="image" href="images/campus_bg.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 80px 20px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('images/campus_bg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #f0f4f8; /* 背景过渡色 */
+            color: #333;
+            min-height: 100vh;
+        }
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #2c6ecb;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #444;
+            margin-top: 30px;
+        }
+        ul {
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+        /* 轮播图样式 */
+        .carousel-container {
+           position: relative;
+           width: 100%;
+           max-width: 800px;
+           overflow: hidden;
+           border-radius: 8px;
+           box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+           margin: 20px auto;
+           /* 添加固定比例容器 */
+           padding-top: 40%; /* 16:9 宽高比 */
+        }
+        .carousel-slide {
+            display: flex;
+            transition: transform 0.5s ease;
+            /* 绝对定位以适应比例容器 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .carousel-img {
+            /* 修改图片样式确保比例合适并居中 */
+            width: 100%;
+            height: 100%;
+            flex-shrink: 0;
+            object-fit: cover; /* 保持比例并覆盖容器 */
+            object-position: center; /* 图片居中显示 */
+        }
+        /* 轮播控制按钮 */
+        .carousel-prev, .carousel-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 15px 10px;
+            cursor: pointer;
+            font-size: 24px;
+            transition: background 0.3s ease;
+        }
+        .carousel-prev:hover, .carousel-next:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+        .carousel-prev {
+            left: 10px;
+        }
+        .carousel-next {
+            right: 10px;
+        }
+        /* 轮播指示器 */
+        .carousel-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .indicator.active {
+            background: white;
+        }
+    </style>
+</head>
+<body>
+<!-- 引入导航栏 -->
+<iframe src="navbar.html" width="100%" height="60px" frameborder="0" scrolling="no" style="position: fixed; top: 0; left: 0; z-index: 999;"></iframe>
+<div class="content">
+    <!-- 主页内容 -->
+    <h1>欢迎来到我们的校园</h1>
+    <p>这里是校园简介内容，可以介绍学校的历史、办学理念、校园环境等信息。</p>
+
+    <!-- 轮播图集 -->
+    <div class="carousel-container">
+        <div class="carousel-slide" id="carouselSlide">
+            <img src="images/campuses/campus1.png" alt="校园风光1" class="carousel-img">
+            <img src="images/campuses/campus2.png" alt="校园风光2" class="carousel-img">
+            <img src="images/campuses/campus3.png" alt="校园风光3" class="carousel-img">
+            <img src="images/campuses/campus4.png" alt="校园风光4" class="carousel-img">
+        </div>
+        <button class="carousel-prev" id="prevBtn">❮</button>
+        <button class="carousel-next" id="nextBtn">❯</button>
+        <div class="carousel-indicators" id="indicators"></div>
+    </div>
+
+    <h2>校园特色</h2>
+    <ul>
+        <li>优秀的师资力量</li>
+        <li>现代化的教学设施</li>
+        <li>丰富的校园文化活动</li>
+        <li>美丽的校园环境</li>
+    </ul>
+</div>
+
+<script>
+    // 轮播图功能实现
+    document.addEventListener('DOMContentLoaded', function() {
+        const slideContainer = document.getElementById('carouselSlide');
+        const slides = document.querySelectorAll('.carousel-img');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const indicatorsContainer = document.getElementById('indicators');
+        let slideIndex = 0;
+        let slideInterval;
+        const slideDelay = 5000; // 自动轮播间隔时间(毫秒)
+
+        // 创建指示器
+        slides.forEach((_, index) => {
+            const indicator = document.createElement('div');
+            indicator.classList.add('indicator');
+            if (index === 0) indicator.classList.add('active');
+            indicator.addEventListener('click', () => goToSlide(index));
+            indicatorsContainer.appendChild(indicator);
+        });
+        const indicators = document.querySelectorAll('.indicator');
+
+        // 更新轮播图位置
+        function updateSlidePosition() {
+            const slideWidth = slides[0].offsetWidth;
+            slideContainer.style.transform = `translateX(-${slideIndex * slideWidth}px)`;
+            // 更新指示器状态
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === slideIndex);
+            });
+        }
+
+        // 切换到指定幻灯片
+        function goToSlide(index) {
+            if (index < 0) {
+                slideIndex = slides.length - 1;
+            } else if (index >= slides.length) {
+                slideIndex = 0;
+            } else {
+                slideIndex = index;
+            }
+            updateSlidePosition();
+        }
+
+        // 下一张幻灯片
+        function nextSlide() {
+            goToSlide(slideIndex + 1);
+        }
+
+        // 上一张幻灯片
+        function prevSlide() {
+            goToSlide(slideIndex - 1);
+        }
+
+        // 开始自动轮播
+        function startSlideInterval() {
+            slideInterval = setInterval(nextSlide, slideDelay);
+        }
+
+        // 停止自动轮播
+        function stopSlideInterval() {
+            clearInterval(slideInterval);
+        }
+
+        // 事件监听
+        prevBtn.addEventListener('click', () => {
+            prevSlide();
+            stopSlideInterval();
+            startSlideInterval();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            stopSlideInterval();
+            startSlideInterval();
+        });
+
+        // 鼠标悬停时暂停轮播
+        slideContainer.addEventListener('mouseenter', stopSlideInterval);
+        slideContainer.addEventListener('mouseleave', startSlideInterval);
+
+        // 窗口大小改变时重新计算位置
+        window.addEventListener('resize', updateSlidePosition);
+
+        // 启动自动轮播
+        startSlideInterval();
+    });
+</script>
+</body>
+</html>
