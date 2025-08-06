@@ -5,6 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c7993568-a41c-47c1-9ce2-1d7db9f38e6f" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/images/author.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messages.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/MarsCodeWorkspaceAppSettings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MarsCodeWorkspaceAppSettings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,6 +44,9 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
+    "javascript.nodejs.core.library.configured.version": "20.17.0",
+    "javascript.nodejs.core.library.typings.version": "20.17.58",
+    "last_opened_file_path": "C:/Users/Folk.skill/Desktop/projects/webObject/fywzWebsite/images",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -49,6 +57,9 @@
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Folk.skill\Desktop\projects\webObject\fywzWebsite\images" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Folk.skill\Desktop\projects\webObject\fywzWebsite" />
       <recent name="C:\Users\Folk.skill\Desktop\projects\webObject\fywzWebsite\images\campuses" />
@@ -74,7 +85,8 @@
       <workItem from="1754454637824" duration="559000" />
       <workItem from="1754455305751" duration="4519000" />
       <workItem from="1754476527380" duration="1274000" />
-      <workItem from="1754478293429" duration="1317000" />
+      <workItem from="1754478293429" duration="4968000" />
+      <workItem from="1754483659875" duration="4498000" />
     </task>
     <servers />
   </component>
