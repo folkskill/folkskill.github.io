@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>迷你游戏 - 师文强快跑</title>
+    <style>
+        #game {
+            width: 800px;
+            height: 200px;
+            border: 1px solid black;
+            margin: auto;
+            position: relative;
+            overflow: hidden;
+            /* 修改背景样式以支持滚动 */
+            background-image: url('images/campus_bg.png');
+            background-size: cover;
+            background-position: 0 0;
+            /* 添加 margin-top 避免被导航栏遮挡 */
+            margin-top: 60px;
+        }
+        /* 添加游戏结束提示样式 */
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px black;
+            display: none;
+        }
+        #dino {
+            width: 40px;
+            height: 50px;
+            background-image: url('images/peoples/shiwenqiang.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            bottom: 0;
+            left: 80px;
+            /* 移除 transition，避免与动画冲突 */
+            animation: run 0.2s infinite linear;
+        }
+
+        @keyframes run {
+            0% {
+                transform: rotate(-5deg);
+            }
+            50% {
+                transform: rotate(5deg);
+            }
+            100% {
+                transform: rotate(-5deg);
+            }
+        }
+
+        .dino-dead {
+            transform: rotate(-90deg);
+            bottom: 0;
+        }
+        .obstacle {
+            width: 30px;
+            height: 50px;
+            background-image: url('images/icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            bottom: 0;
+        }
+        .flying-obstacle {
+            width: 30px;
+            height: 30px;
+            background-image: url('images/icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            bottom: 120px;
+        }
+        .score-board {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-family: Arial, sans-serif;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        /* 新增字幕样式 */
+        .caption {
+            position: absolute;
+            font-size: 16px;
+            color: red;
+            font-weight: bold;
+            pointer-events: none;
+        }
+        /* 新增图片样式 */
+        .random-image {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            opacity: 0.3; /* 降低图片透明度 */
+        }
+    </style>
+</head>
+<body>
+    <iframe src="navbar.html" width="100%" height="60px" frameborder="0" scrolling="no" style="position: fixed; top: 0; left: 0; z-index: 999;"></iframe>
+    <div id="game">
+        <!-- 先添加字幕层 -->
+        <!-- 然后添加角色层 -->
+        <div id="dino"></div>
+        <div class="score-board">分数: <span id="score">0</span></div>
+        <!-- 添加游戏结束提示元素 -->
+        <div id="game-over">游戏结束！</div>
+    </div>
+    <audio id="jumpSound" src="sounds/jump.mp3"></audio>
+    <audio id="hitSound" src="sounds/hit.mp3"></audio>
+    <audio id="scoreSound" src="sounds/score.mp3"></audio>
+    <audio id="bgm" src="sounds/bgm.mp3" loop></audio>
+    <script>
+        const dino = document.getElementById('dino');
+        const scoreSpan = document.getElementById('score');
+        const gameOver = document.getElementById('game-over');
+        const jumpSound = document.getElementById('jumpSound');
+        const hitSound = document.getElementById('hitSound');
+        const scoreSound = document.getElementById('scoreSound');
+        const bgm = document.getElementById('bgm');
+        // 新增：障碍物图片列表
+        const obstacleImages = [
+            'images/peoples/guohongwei.png',
+            'images/peoples/guoyan.png',
+            'images/peoples/lingfeng.png',
+            'images/peoples/liuyonghui.png',
+            'images/peoples/renyueping.png'
+        ];
+        // 新增：字幕数组
+        const captions = ['加油！', '跳起来！', '躲开它！','全国只有一个贾家庄！','你数学不好是因为你数学不好','大东北是我的家乡'];
+        // 新增：随机图片列表，确保在全局作用域定义
+        const randomImages = [
+            'images/peoples/guohongwei.png',
+            'images/peoples/guoyan.png',
+            'images/peoples/lingfeng.png',
+            'images/peoples/liuyonghui.png',
+            'images/peoples/renyueping.png',
+            'images/peoples/shiwenqiang.png'
+        ];
+        // 设置背景音乐音量
+        bgm.volume = 0.3;
+        let score = 0;
+        let isJumping = false;
+        let speed = 10;
+        let obstacleIntervalId;
+        let obstacleTimers = []; // 存储所有障碍物的定时器
+
+        // 修改：添加点击事件监听
+        document.addEventListener('click', function(event) {
+            if (!isJumping) {
+                jump();
+            }
+        });
+
+        // 添加空格跳跃监听
+        document.addEventListener('keydown', function(event) {
+            if (event.key === ' ' && !isJumping) {
+                jump();
+            }
+        });
+
+        function jump() {
+            jumpSound.play();
+            isJumping = true;
+            // 暂停跑步动画
+            dino.style.animationPlayState = 'paused'; 
+            // 降低 jumpPower 值，减少跳跃高度
+            let jumpHeight = 0;
+            const gravity = 0.9;
+            const jumpPower = 14; // 原 18，降低为 12
+            let velocity = jumpPower;
+            
+            const jumpInterval = setInterval(() => {
+                jumpHeight += velocity;
+                velocity -= gravity;
+                dino.style.bottom = jumpHeight + 'px';
+                
+                // 根据跳跃高度调整角度
+                if (jumpHeight < 50) {
+                    dino.style.transform = `rotate(${(jumpHeight / 50) * 30}deg)`;
+                } else {
+                    dino.style.transform = `rotate(${30 - ((jumpHeight - 50) / 50) * 30}deg)`;
+                }
+
+                if (jumpHeight <= 0) {
+                    clearInterval(jumpInterval);
+                    isJumping = false;
+                    dino.style.bottom = '0px';
+                    dino.style.transform = 'rotate(0deg)';
+                    // 恢复跑步动画
+                    dino.style.animationPlayState = 'running'; 
+                }
+            }, 30);
+        }
+
+        // 创建障碍物
+        function createObstacle() {
+            if (bgm.paused) {
+                bgm.play();
+            }
+
+            const obstacle = document.createElement('div');
+            if (Math.random() > 0.7) {
+                obstacle.className = 'flying-obstacle';
+                // 调整飞行障碍物大小
+                obstacle.style.width = '50px';
+                obstacle.style.height = '50px';
+            } else {
+                obstacle.className = 'obstacle';
+                // 调整地面障碍物大小
+                obstacle.style.width = '50px';
+                obstacle.style.height = '50px';
+            }
+            // 随机选择障碍物图片
+            const randomImage = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+            obstacle.style.backgroundImage = `url(${randomImage})`;
+            obstacle.style.left = '800px';
+            document.getElementById('game').appendChild(obstacle);
+            moveObstacle(obstacle);
+        }
+
+        // 移动障碍物
+        let backgroundPosition = 0;
+        // 新增背景滚动函数
+        function scrollBackground() {
+            backgroundPosition -= speed;
+            document.getElementById('game').style.backgroundPosition = `${backgroundPosition}px 0`;
+        }
+
+        // 新增背景滚动定时器
+        let backgroundIntervalId;
+
+        // 修改碰撞检测逻辑
+        // 新增随机颜色生成函数
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        let captionIntervalId;
+
+        // 修改：移除 jump 函数中的字幕生成逻辑
+        function jump() {
+            jumpSound.play();
+            isJumping = true;
+            // 暂停跑步动画
+            dino.style.animationPlayState = 'paused'; 
+            // 降低 jumpPower 值，减少跳跃高度
+            let jumpHeight = 0;
+            const gravity = 0.9;
+            const jumpPower = 14; // 原 18，降低为 12
+            let velocity = jumpPower;
+            
+            const jumpInterval = setInterval(() => {
+                jumpHeight += velocity;
+                velocity -= gravity;
+                dino.style.bottom = jumpHeight + 'px';
+                
+                // 根据跳跃高度调整角度
+                if (jumpHeight < 50) {
+                    dino.style.transform = `rotate(${(jumpHeight / 50) * 30}deg)`;
+                } else {
+                    dino.style.transform = `rotate(${30 - ((jumpHeight - 50) / 50) * 30}deg)`;
+                }
+
+                if (jumpHeight <= 0) {
+                    clearInterval(jumpInterval);
+                    isJumping = false;
+                    dino.style.bottom = '0px';
+                    dino.style.transform = 'rotate(0deg)';
+                    // 恢复跑步动画
+                    dino.style.animationPlayState = 'running'; 
+                }
+            }, 30);
+        }
+
+        // 修改 moveObstacle 函数
+        function moveObstacle(obstacle) {
+            let obstaclePosition = 800;
+            const obstacleInterval = setInterval(function() {
+                // 将触发坠落的位置提前，例如障碍物到达 0 位置时就开始坠落
+                if (obstaclePosition < 0) {
+                    clearInterval(obstacleInterval);
+                    const index = obstacleTimers.indexOf(obstacleInterval);
+                    if (index > -1) {
+                        obstacleTimers.splice(index, 1);
+                    }
+                    
+                    // 障碍物到达边缘时触发坠落动画
+                    let rotation = 0;
+                    let fallSpeed = 1;
+                    const fallInterval = setInterval(() => {
+                        rotation += 10;
+                        obstacle.style.transform = `rotate(${rotation}deg)`;
+                        const currentBottom = parseInt(obstacle.style.bottom) || 0;
+                        obstacle.style.bottom = (currentBottom - fallSpeed) + 'px';
+                        fallSpeed += 0.1;
+
+                        if (currentBottom - fallSpeed < -100) {
+                            clearInterval(fallInterval);
+                            obstacle.remove();
+                        }
+                    }, 30);
+
+                    score++; 
+                    scoreSound.play();
+                    scoreSpan.textContent = score;
+                    speed += 0.1; // 障碍物加速
+                } else {
+                    // 碰撞检测
+                    const dinoBottom = parseInt(dino.style.bottom) || 0;
+                    const dinoLeft = parseInt(dino.style.left) || 80;
+                    // 考虑图片实际显示，适当缩小碰撞检测范围
+                    const dinoRight = dinoLeft + 35; // 原 40，缩小为 35
+                    const dinoTop = dinoBottom + 45; // 原 50，缩小为 45
+                    // 添加默认值，根据障碍物类型设置不同默认值
+                    const obstacleLeft = parseInt(obstacle.style.left) || 0;
+                    // 考虑图片实际显示，调整碰撞检测范围
+                    const obstacleRight = obstacleLeft + 50;
+                    const obstacleBottom = parseInt(obstacle.style.bottom) || (obstacle.classList.contains('flying-obstacle') ? 120 : 0);
+                    const obstacleHeight = 50;
+                    const obstacleTop = obstacleBottom + obstacleHeight;
+
+                    // 优化碰撞检测逻辑，确保边界判断更精确
+                    if ( 
+                        obstacleLeft < dinoRight && 
+                        obstacleRight > dinoLeft && 
+                        (obstacle.classList.contains('flying-obstacle') ? 
+                            dinoTop > obstacleBottom && dinoBottom < obstacleTop : 
+                            dinoBottom < obstacleTop && dinoTop > obstacleBottom) 
+                    ) {
+                        hitSound.play();
+                        // 清除所有障碍物定时器
+                        obstacleTimers.forEach(timer => clearInterval(timer));
+                        obstacleTimers = [];
+                        clearInterval(obstacleIntervalId);
+                        // 为所有障碍物添加旋转掉落效果
+                        document.querySelectorAll('.obstacle, .flying-obstacle').forEach(obs => {
+                            let rotation = 0;
+                            let fallSpeed = 1;
+                            const fallInterval = setInterval(() => {
+                                rotation += 10;
+                                obs.style.transform = `rotate(${rotation}deg)`;
+                                const currentBottom = parseInt(obs.style.bottom) || 0;
+                                obs.style.bottom = (currentBottom - fallSpeed) + 'px';
+                                fallSpeed += 0.1;
+
+                                if (currentBottom - fallSpeed < -100) {
+                                    clearInterval(fallInterval);
+                                    obs.remove();
+                                }
+                            }, 30);
+                        });
+                        // 暂停跑步动画
+                        dino.style.animationPlayState = 'paused'; 
+                        // 添加 transition 控制死亡动画流畅度
+                        dino.style.transition = 'transform 0.5s ease';
+                        dino.style.transform = 'rotate(-90deg)';
+                        // 显示游戏结束提示
+                        gameOver.style.display = 'block';
+                        // 暂停背景音乐
+                        bgm.pause();
+                        // 1 秒后重置游戏状态
+                        setTimeout(() => {
+                            startGame();
+                        }, 1000);
+                    } else {
+                        obstaclePosition -= speed;
+                        obstacle.style.left = obstaclePosition + 'px';
+                    }
+                }
+                // 将定时器存储逻辑移到定时器外部
+            }, 30);
+            // 正确存储定时器
+            obstacleTimers.push(obstacleInterval);
+        }
+        // 修改开始游戏函数，添加重新开始逻辑
+        // 修改 startGame 函数，添加随机生成图片逻辑
+        function startGame() {
+            // 确保只有一个定时器在运行
+            if (obstacleIntervalId) {
+                clearInterval(obstacleIntervalId);
+            }
+            // 清除背景滚动定时器
+            if (backgroundIntervalId) {
+                clearInterval(backgroundIntervalId);
+            }
+            // 清除之前的字幕定时器
+            if (captionIntervalId) {
+                clearTimeout(captionIntervalId);
+            }
+            // 隐藏游戏结束提示
+            gameOver.style.display = 'none';
+            score = 0;
+            scoreSpan.textContent = score;
+            speed = 10;
+            backgroundPosition = 0;
+            document.getElementById('game').style.backgroundPosition = '0 0';
+            random_tick = Math.random() * 2000 + 1000;
+            obstacleIntervalId = setInterval(createObstacle, random_tick);
+            // 启动背景滚动定时器
+            backgroundIntervalId = setInterval(scrollBackground, 30);
+        
+            // 随机时间生成字幕
+            function generateRandomCaption() {
+                const caption = document.createElement('div');
+                caption.className = 'caption';
+                caption.textContent = captions[Math.floor(Math.random() * captions.length)];
+                caption.style.color = getRandomColor();
+                // 随机位置，修改最低高度为 200px
+                caption.style.left = `${Math.floor(Math.random() * 800)}px`;
+                caption.style.bottom = `${Math.floor(Math.random() * 200) + 200}px`;
+                document.getElementById('game').appendChild(caption);
+
+                // 字幕旋转坠落效果
+                let rotation = 0;
+                let fallSpeed = 1;
+                const captionInterval = setInterval(() => {
+                    rotation += 10;
+                    caption.style.transform = `rotate(${rotation}deg)`;
+                    const currentBottom = parseInt(caption.style.bottom) || 0;
+                    caption.style.bottom = (currentBottom - fallSpeed) + 'px';
+                    fallSpeed += 0.1;
+
+                    if (currentBottom - fallSpeed < -100) {
+                        clearInterval(captionInterval);
+                        caption.remove();
+                    }
+                }, 30);
+                // 设置下一次随机生成字幕的时间，缩短范围为 0.5 - 2 秒，加快生成速度
+                captionIntervalId = setTimeout(generateRandomCaption, Math.random() * 1500 + 500);
+            }
+            generateRandomCaption();
+
+            // 随机时间生成图片
+            function generateRandomImage() {
+                const randomImage = document.createElement('div');
+                randomImage.className = 'random-image';
+                const imageUrl = randomImages[Math.floor(Math.random() * randomImages.length)];
+                randomImage.style.backgroundImage = `url(${imageUrl})`;
+                randomImage.style.left = `${Math.floor(Math.random() * 800)}px`;
+                randomImage.style.bottom = `${Math.floor(Math.random() * 200) + 200}px`;
+                document.getElementById('game').appendChild(randomImage);
+
+                // 图片旋转坠落效果
+                let rotation = 0;
+                let fallSpeed = 1;
+                const imageInterval = setInterval(() => {
+                    rotation += 10;
+                    randomImage.style.transform = `rotate(${rotation}deg)`;
+                    const currentBottom = parseInt(randomImage.style.bottom) || 0;
+                    randomImage.style.bottom = (currentBottom - fallSpeed) + 'px';
+                    fallSpeed += 0.1;
+
+                    if (currentBottom - fallSpeed < -100) {
+                        clearInterval(imageInterval);
+                        randomImage.remove();
+                    }
+                }, 30);
+                // 设置下一次随机生成图片的时间，0.5 - 2 秒
+                const nextImageTimer = setTimeout(generateRandomImage, Math.random() * 1500 + 500);
+            }
+            generateRandomImage();
+        }
+        // 添加重新开始监听
+        document.addEventListener('keydown', function(event) {
+            if (event.key === ' ' && gameOver.style.display === 'block') {
+                startGame();
+            }
+        });
+        startGame();
+    </script>
+</body>
+</html>
