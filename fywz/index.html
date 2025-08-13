@@ -4,44 +4,9 @@
     <meta charset="UTF-8">
     <title>校园介绍 - 主页</title>
     <!-- 预加载背景图片 -->
-    <link rel="preload" as="image" href="images/campus_bg.png">
+    <link rel="preload" as="image" href="fywz/images/campus_bg.png">
+    <link rel="stylesheet" href="fywz/css/styles.css">
     <style>
-        body {
-            margin: 0;
-            padding: 80px 20px 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: url('images/campus_bg.png');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-color: #f0f4f8; /* 背景过渡色 */
-            color: #333;
-            min-height: 100vh;
-        }
-        .content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-        h1 {
-            color: #2c6ecb;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #444;
-            margin-top: 30px;
-        }
-        ul {
-            line-height: 1.8;
-            padding-left: 20px;
-        }
         /* 轮播图样式 */
         .carousel-container {
            position: relative;
@@ -406,7 +371,7 @@
 </head>
 <body>
         <!-- 引入导航栏 -->
-        <iframe src="navbar.html" width="100%" height="60px" frameborder="0" scrolling="no" style="position: fixed; top: 0; left: 0; z-index: 999;"></iframe>
+        <iframe src="/navbar.html" width="100%" height="60px" frameborder="0" scrolling="no" style="position: fixed; top: 0; left: 0; z-index: 999;"></iframe>
         <div class="content">
         <!-- 主页内容 -->
         <h1 style="object-position: center; text-align: center;">
@@ -425,7 +390,7 @@
                 </p>
             </div>
             <div class="combined-card">
-                <img src="images/author.jpg" alt="作者头像" class="author-avatar">
+                <img src="fywz/images/author.jpg" alt="作者头像" class="author-avatar">
                 <p>folkskill</p>
                 <p>我不会做网站。。。</p>
             </div>
@@ -439,10 +404,10 @@
         <!-- 轮播图集 -->
         <div class="carousel-container">
             <div class="carousel-slide" id="carouselSlide">
-                <img src="images/campuses/campus1.png" alt="校园风光1" class="carousel-img">
-                <img src="images/campuses/campus2.png" alt="校园风光2" class="carousel-img">
-                <img src="images/campuses/campus3.png" alt="校园风光3" class="carousel-img">
-                <img src="images/campuses/campus4.png" alt="校园风光4" class="carousel-img">
+                <img src="fywz/images/campuses/campus1.png" alt="校园风光1" class="carousel-img">
+                <img src="fywz/images/campuses/campus2.png" alt="校园风光2" class="carousel-img">
+                <img src="fywz/images/campuses/campus3.png" alt="校园风光3" class="carousel-img">
+                <img src="fywz/images/campuses/campus4.png" alt="校园风光4" class="carousel-img">
             </div>
             <button class="carousel-prev" id="prevBtn">❮</button>
             <button class="carousel-next" id="nextBtn">❯</button>
@@ -523,16 +488,7 @@
 
             </li>
 
-            <a href="parkun.html" style="object-position: center;margin: auto; display: inline-block; padding: 10px 20px; background-color: #2c6ecb; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">点击玩师文强快跑游戏</a>
-
-            <div class="message-board">
-                <button class="message-board-toggle">展开留言板 ▼</button>
-                <div class="message-input-container">
-                    <input type="text" class="message-input" placeholder="请输入留言内容...">
-                    <button class="submit-btn">提交留言</button>
-                </div>
-                <ul class="message-list"></ul>
-            </div>
+            <a href="fywz/parkour.html" style="object-position: center;margin: auto; display: inline-block; padding: 10px 20px; background-color: #2c6ecb; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">点击玩师文强快跑游戏</a>
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -621,100 +577,27 @@
                     startSlideInterval();
 
                     <!-- 访问计数功能实现 -->
-                    function updateVisitCount() {
-                        let visitCount = localStorage.getItem('visitCount');
-                        if (visitCount === null) {
-                            visitCount = 1;
-                        } else {
-                            visitCount = parseInt(visitCount, 10) + 1;
-                        }
-                        localStorage.setItem('visitCount', visitCount);
-                        const countElement = document.getElementById('visitCount');
-                        countElement.textContent = visitCount;
-                        countElement.classList.add('count-up-animation');
+                    async function updateVisitCount() {
+                        try {
+                            const response = await fetch('/api/visit-count');
+                            if (!response.ok) throw new Error('获取访问计数失败');
+                            const data = await response.json();
 
-                        // 动画结束后移除类名，以便下次加载时能再次触发动画
-                        countElement.addEventListener('animationend', () => {
-                            countElement.classList.remove('count-up-animation');
-                        });
+                            const countElement = document.getElementById('visitCount');
+                            countElement.textContent = data.visitors;
+                            countElement.classList.add('count-up-animation');
+
+                            // 动画结束后移除类名，以便下次加载时能再次触发动画
+                            countElement.addEventListener('animationend', () => {
+                                countElement.classList.remove('count-up-animation');
+                            });
+                        } catch (error) {
+                            console.error('更新访问计数失败:', error);
+                        }
                     }
 
                     // 执行访问计数更新
                     updateVisitCount();
-                    const messageInput = document.querySelector('.message-input');
-                    const submitBtn = document.querySelector('.submit-btn');
-                    const messageList = document.querySelector('.message-list');
-                    const messageBoardToggle = document.querySelector('.message-board-toggle');
-                    const messageBoard = document.querySelector('.message-board');
-
-                    // 模拟从文件读取留言
-                    async function loadMessages() {
-                        try {
-                            const response = await fetch('messages.json');
-                            if (!response.ok) throw new Error('读取留言失败');
-                            const messages = await response.json();
-                            messageList.innerHTML = '';
-                            messages.forEach(message => addMessageToDOM(message));
-                        } catch (error) {
-                            console.error('加载留言失败:', error);
-                        }
-                    }
-
-                    // 添加留言到 DOM
-                    function addMessageToDOM(message) {
-                        const li = document.createElement('li');
-                        li.className = 'message-item';
-                        li.innerHTML = `
-                            <div class="message-content">${message.content}</div>
-                            <div class="message-time">${message.time}</div>
-                        `;
-                        messageList.prepend(li);
-                    }
-
-                    // 模拟保存留言到文件
-                    async function saveMessage(message) {
-                        try {
-                            // 先读取现有留言
-                            const response = await fetch('messages.json');
-                            if (!response.ok) throw new Error('读取留言失败');
-                            let messages = await response.json();
-
-                            // 添加新留言
-                            messages.unshift(message);
-
-                            // 限制留言数量为 20 条
-                            if (messages.length > 20) {
-                                messages.pop();
-                            }
-
-                            // 模拟保存成功后更新 UI
-                            messageList.innerHTML = '';
-                            messages.forEach(msg => addMessageToDOM(msg));
-                        } catch (error) {
-                            console.error('保存留言失败:', error);
-                        }
-                    }
-
-                    // 提交留言
-                    submitBtn.addEventListener('click', () => {
-                        const content = messageInput.value.trim();
-                        if (content) {
-                            const message = {
-                                content: content,
-                                time: new Date().toLocaleString()
-                            };
-                            saveMessage(message);
-                            messageInput.value = '';
-                        }
-                    });
-
-                    // 留言板展开/折叠
-                    messageBoardToggle.addEventListener('click', () => {
-                        messageBoard.classList.toggle('expanded');
-                        messageBoardToggle.textContent = messageBoard.classList.contains('expanded') ? '折叠留言板 ▲' : '展开留言板 ▼';
-                    });
-
-                    loadMessages()
                 });
             </script>
         </ul>

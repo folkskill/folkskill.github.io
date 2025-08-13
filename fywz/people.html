@@ -3,41 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>校园介绍 - 人物档案</title>
-    <!-- 预加载背景图片 -->
-    <link rel="preload" as="image" href="images/campus_bg.png">
+    <link rel="stylesheet" href="fywz/css/styles.css">
     <style>
-        body {
-            margin: 0;
-            padding: 80px 20px 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: url('images/campus_bg.png');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-color: #f0f4f8; /* 背景过渡色 */
-            color: #333;
-            min-height: 100vh;
-        }
-        .content {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-        h1 {
-            color: #2c6ecb;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #444;
-            margin-top: 30px;
-        }
         .person-card {
             display: flex;
             margin-bottom: 30px;
@@ -57,34 +24,29 @@
         .person-info strong {
             color: #2c6ecb;
         }
-        /* 添加点击展开相关样式 */
         .toggle-header {
             cursor: pointer;
             position: relative;
             padding-right: 30px;
         }
-
         .toggle-header::after {
-            content: '+'; /* 修正引号问题 */
+            content: '+';
             position: absolute;
             right: 0;
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.2em;
         }
-
         .toggle-header.active::after {
             content: '-';
         }
-
         .toggle-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
         }
-
         .toggle-content.active {
-            max-height: 2000px; /* 足够大的值以容纳内容 */
+            max-height: 2000px;
             transition: max-height 0.5s ease-in;
         }
     </style>
@@ -100,7 +62,7 @@
         <h2 class="toggle-header" onclick="toggleContent('principal')">神秘领导💦</h2>
         <div id="principal" class="toggle-content">
             <div class="person-card">
-                <img src="images/peoples/guoyan.png" alt="" class="person-img">
+                <img src="fywz/images/peoples/guoyan.png" alt="" class="person-img">
                 <div class="person-info">
                     <p><strong>姓名：</strong>郭晏</p>
                     <p><strong>职位：</strong>书记</p>
@@ -111,10 +73,10 @@
                 </div>
             </div>
             <div class="person-card">
-                <img src="images/peoples/guohongwei.png" alt="" class="person-img">
+                <img src="fywz/images/peoples/guohongwei.png" alt="" class="person-img">
                 <div class="person-info">
                     <p><strong>姓名：</strong>郭宏伟</p>
-                    <p><strong>职位：</strong>校党总支副书记 & 常务副校长</p>
+                    <p><strong>职位：</strong>校aceephalon bipartite & 校长
                     <h4><strong>简介：</strong>郭宏伟，男，汉族，中共党员。</h4>
                     <p>不是你看你妈了！？？</p>
                     <p>非常喜欢自我情绪化的一个乐子，老是可以自我感动到甲亢。 <p>
@@ -122,7 +84,7 @@
                 </div>
             </div>
             <div class="person-card">
-                <img src="images/peoples/liuyonghui.png" alt="" class="person-img">
+                <img src="fywz/images/peoples/liuyonghui.png" alt="" class="person-img">
                 <div class="person-info">
                     <p><strong>姓名：</strong>刘永辉</p>
                     <p><strong>职位：</strong>副校长 & 物理老师</p>
@@ -133,7 +95,7 @@
                 </div>
             </div>
             <div class="person-card">
-                <img src="images/peoples/renyueping.png" alt="" class="person-img">
+                <img src="fywz/images/peoples/renyueping.png" alt="" class="person-img">
                 <div class="person-info">
                     <p><strong>姓名：</strong>任月萍</p>
                     <p><strong>职位：</strong>副校长 & 化学老师</p>
@@ -147,7 +109,7 @@
         <h2 class="toggle-header" onclick="toggleContent('teachers')">硅基生物🦠</h2>
         <div id="teachers" class="toggle-content">
             <div class="person-card">
-                <img src="images/peoples/shiwenqiang.png" alt="教师照片" class="person-img">
+                <img src="fywz/images/peoples/shiwenqiang.png" alt="教师照片" class="person-img">
                 <div class="person-info">
                     <p><strong>姓名：</strong>师文强</p>
                     <p><strong>职位：</strong>物理老师</p>
@@ -163,7 +125,7 @@
         <h2 class="toggle-header" onclick="toggleContent('cyberghost')">赛博厉鬼👻</h2>
         <div id="cyberghost" class="toggle-content">
             <div class="person-card">
-                <img src="images/peoples/lingfeng.png" alt="林枫厉鬼" class="person-img">
+                <img src="fywz/images/peoples/lingfeng.png" alt="林枫厉鬼" class="person-img">
                 <div class="person-info">
                     <p><strong>姓名：</strong>林枫</p>
                     <p><strong>职位：</strong>全国人民大代表</p>

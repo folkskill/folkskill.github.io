@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>导航栏</title>
-    <link rel="icon" href="images/icon.png" type="image/png">
     <style>
-        body { margin: 0; padding: 0; height: 60px; overflow: hidden; }
         .navbar {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -39,14 +37,69 @@
             color: #2c6ecb;
             border-bottom: 2px solid #2c6ecb;
         }
+        .user-info {
+            margin-left: auto;
+        }
+        .login-register {
+            margin-left: auto;
+        }
+        .login-register a {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-<div class="navbar">
-    <img src="images/icon.png" alt="网站图标" class="logo">
-    <a href="index.html" target="_parent" class="active">主页</a> |
-    <a href="people.html" target="_parent">人物档案</a> |
-    <a href="news.html" target="_parent">新闻</a>
-</div>
+    <div class="navbar">
+        <img src="fywz/images/icon.png" alt="Logo" class="logo">
+        <a href="index" target="_parent">主页</a>
+        <a href="people" target="_parent">人物档案</a>
+        <a href="news" target="_parent">新闻</a>
+        <a href="blog" target="_parent">博客</a>
+        <div class="user-info" id="userInfo"></div>
+    </div>
+    <script>
+        async function showUserInfo() {
+            try {
+                const response = await fetch("api/visit-ip")
+                const userdata = await response.json()
+                const userIp = userdata.ip
+
+                // 获取用户数据
+                const userDataResponse = await fetch('fywz/data/user_data.json');
+                const userData = await userDataResponse.json();
+
+                // 查找匹配 IP 的用户
+                const matchedUser = userData.find(user => user.user_ip.includes(userIp));
+                const userInfoElement = document.getElementById('userInfo');
+
+                if (matchedUser) {
+                    console.info("An user is matched: ", matchedUser);
+                    // 存储用户信息到 localStorage 实现自动登录
+                    localStorage.setItem('token', `auto_${matchedUser.user_name}`);
+                    userInfoElement.innerHTML = `欢迎，${matchedUser.user_name}`;
+                    userInfoElement.className = 'user-info';
+                } else {
+                    console.info("Get ip not in user_data.json: ", userIp);
+                    userInfoElement.innerHTML = `
+                        <div class="login-register">
+                            <a href="login" target="_parent">登录</a>
+                            <a href="register" target="_parent">注册</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+                const userInfoElement = document.getElementById('userInfo');
+                userInfoElement.innerHTML = `
+                    <div class="login-register">
+                        <a href="login" target="_parent">登录</a>
+                        <a href="register" target="_parent">注册</a>
+                    </div>
+                `;
+            }
+        }
+
+        showUserInfo();
+    </script>
 </body>
-</html>i
+</html>

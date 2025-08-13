@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>登录</title>
+    <link rel="stylesheet" href="fywz/css/styles.css" />
+    <style>
+      .login-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        max-width: 400px;
+        margin: 100px auto;
+      }
+
+      .login-input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      .login-btn {
+        padding: 10px 20px;
+        background-color: #2c6ecb;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .login-btn:hover {
+        background-color: #235aa7;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe
+      src="/navbar.html"
+      width="100%"
+      height="60px"
+      frameborder="0"
+      scrolling="no"
+      style="position: fixed; top: 0; left: 0; z-index: 999"
+    ></iframe>
+    <div class="login-container">
+      <h2>登录</h2>
+      <input
+        type="text"
+        class="login-input"
+        id="username"
+        placeholder="用户名"
+      />
+      <input
+        type="password"
+        class="login-input"
+        id="password"
+        placeholder="密码"
+      />
+      <button class="login-btn" id="loginBtn">登录</button>
+    </div>
+    <script>
+      document
+        .getElementById("loginBtn")
+        .addEventListener("click", async () => {
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          try {
+            const response = await fetch("/api/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert("登录成功");
+                // 存储 token 标识登录状态
+                localStorage.setItem('token',`auto_${username}`);
+                window.location.href = "/";
+            } else {
+                alert(result.message);
+            }
+          } catch (error) {
+            console.error("登录失败:", error);
+            alert("登录失败，请稍后重试");
+          }
+        });
+    </script>
+  </body>
+</html>

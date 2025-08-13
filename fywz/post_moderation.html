@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>帖子审核页面</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 80px 20px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('../fywz/images/campus_bg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #f0f4f8; /* 背景过渡色 */
+            color: #333;
+            min-height: 100vh;
+        }
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #2c6ecb;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #444;
+            margin-top: 30px;
+        }
+        .blog-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin: 25px 0;
+            line-height: 1.8;
+            text-align: justify;
+            transition: transform 0.2s ease;
+        }
+        .blog-card:hover {
+            transform: translateY(-5px);
+        }
+        .blog-card h3 {
+            color: #666;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+        }
+        .blog-card h2 {
+            color: #2c6ecb;
+            margin: 15px 0;
+            font-size: 22px;
+        }
+        .blog-card p {
+            margin: 15px 0;
+            color: #333;
+            font-size: 16px;
+            line-height: 1.9;
+            max-height: 400px;
+            overflow-y: auto;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            padding-right: 10px; /* 为滚动条留出空间 */
+        }
+        /* 自定义滚动条样式 */
+        .blog-card p::-webkit-scrollbar {
+            width: 8px;
+        }
+        .blog-card p::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .blog-card p::-webkit-scrollbar-track {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .blog-card p:first-child {
+            margin-top: 0;
+        }
+        .blog-card p:last-child {
+            margin-bottom: 0;
+        }
+        .blog-card button {
+            background-color: #2c6ecb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+        .blog-card button.approve {
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+        }
+        .blog-card button.approve:hover {
+            background: linear-gradient(135deg, #388E3C 0%, #66BB6A 100%);
+        }
+        .blog-card button.reject {
+            background: linear-gradient(135deg, #F44336 0%, #E57373 100%);
+            color: white;
+        }
+        .blog-card button.reject:hover {
+            background: linear-gradient(135deg, #D32F2F 0%, #EF9A9A 100%);
+        }
+        .blog-card .meta-info {
+            color: #888;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <iframe src="/navbar.html" width="100%" height="60px" frameborder="0" scrolling="no" style="position: fixed; top: 0; left: 0; z-index: 999;"></iframe>
+    <div class="content">
+        <h1>待审核帖子</h1>
+        <div id="review-list"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 获取用户 IP
+                const ipResponse = await fetch('/api/visit-ip');
+                const ipData = await ipResponse.json();
+                const clientIp = ipData.ip;
+
+                // 获取用户数据
+                const userDataResponse = await fetch('../fywz/data/user_data.json');
+                const userData = await userDataResponse.json();
+
+                // 检查用户权限
+                const user = userData.find(u => u.user_ip.includes(clientIp));
+                if (!user || user.user_permission !== 'admin') {
+                    const reviewList = document.getElementById('review-list');
+                    reviewList.innerHTML = '<p>你不是管理员，无权查看该内容！</p>';
+                    return;
+                }
+
+                // 统一使用 /pending-posts 接口获取数据
+                const response = await fetch('/pending-posts');
+                console.log('响应状态:', response.status);
+                if (!response.ok) throw new Error('获取待审核帖子失败');
+
+                const posts = await response.json();
+                console.log('响应内容:', posts);
+                const reviewList = document.getElementById('review-list');
+
+                if (posts.length === 0) {
+                    reviewList.innerHTML = '<p>哎呀，没有待审核的帖子啦！</p>';
+                } else {
+                    posts.forEach(post => {
+                        const postElement = document.createElement('div');
+                        postElement.className = 'blog-card';
+                        // 添加作者名字，若 user_info 或 user_name 不存在则显示未知作者
+                        const authorName = post.user_info && post.user_info.user_name ? post.user_info.user_name : '未知作者';
+                        postElement.innerHTML = `
+                            <h3>作者: ${authorName}</h3>
+                            <h2>${post.title}</h2>
+                            <p>${post.content}</p>
+                            <p class="meta-info">提交时间: ${new Date(post.date).toLocaleDateString('zh-CN')}</p>
+                            <button class="approve" onclick="approvePost('${post.id}')">通过</button>
+                            <button class="reject" onclick="rejectPost('${post.id}')">拒绝</button>
+                        `;
+                        reviewList.appendChild(postElement);
+                    });
+                }
+            } catch (error) {
+                console.error('加载待审核博客数据失败:', error);
+            }
+        });
+
+        function approvePost(postId) {
+            fetch('/approve-post', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: postId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 重新加载待审核帖子列表
+                    location.reload();
+                }
+            });
+        }
+
+        function rejectPost(postId) {
+            if (confirm('确定要拒绝这篇帖子吗？')) {
+                fetch('/reject-post', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: postId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 重新加载待审核帖子列表
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
